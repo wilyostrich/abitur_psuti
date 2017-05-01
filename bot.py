@@ -59,19 +59,11 @@ def course(message):
 
 def course_info(message):
     if message.text == 'Подготовка к ЕГЭ и внутренним экзаменам':
-        #markup = types.ReplyKeyboardRemove(selective=False)
         bot.send_message(message.chat.id, text=config["COURSE"]["ege"], parse_mode='HTML')
-        #link = types.InlineKeyboardMarkup()
-        #url_button = types.InlineKeyboardButton(text="Записаться на курсы!",
-                                                #url="http://abitur.psuti.ru/center/podgotovitelnye-kursy-k-ege-i-vnutrennim-ekzamenam/")
-        #link.add(url_button)
-        #bot.send_message(message.chat.id, "Получить более подробную информаци, а также записаться на курсы,"
-                                          #" можно перейдя по кнопке.",reply_markup=link)
         msg_exam = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться на курсы,'
                                           ' можно перейдя по ссылке: http://abitur.psuti.ru/center/podgotovitelnye-kursy-k-ege-i-vnutrennim-ekzamenam/', disable_web_page_preview=True)
         bot.register_next_step_handler(msg_exam, course_info)
     elif message.text == 'Школа программистов':
-        #markup = types.ReplyKeyboardRemove(selective=False)
         bot.send_message(message.chat.id, '<b>Школа программистов</b>\n'
                                           'Обучение платное для учащихся 8-х, 9-х, 10-х и 11-х классов, проводится в 3 этапа:\n'
                                           '1. Информатика;\n'
@@ -84,7 +76,6 @@ def course_info(message):
                                           ' можно перейдя по ссылке: http://abitur.psuti.ru/center/shkola-programmistov/', disable_web_page_preview=True, parse_mode='HTML')
         bot.register_next_step_handler(msg_school, course_info)
     elif message.text == 'Инженерный лицей':
-        #markup = types.ReplyKeyboardRemove(selective=False)
         bot.send_message(message.chat.id, text=config["COURSE"]["engineer"], parse_mode='HTML')
         msg_engineer = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться на занятия,'
                                           ' можно перейдя по ссылке: http://abitur.psuti.ru/center/inzhenernyy-litsey/',
@@ -93,7 +84,6 @@ def course_info(message):
     elif message.text == 'Меню':
         help_message(message)
     else:
-        #markup = types.ReplyKeyboardRemove(selective=False)
         msg_understand = bot.send_message(message.chat.id, 'Я Вас не понял, выберите раздел из меню '
                                           'или используйте кнопку Меню для выхода в меню')
         bot.register_next_step_handler(msg_understand, course_info)
@@ -111,7 +101,18 @@ def specialties(message):
 
 def specialties_info(message):
     if message.text == 'Академический бакалавриат':
-        bot.send_message(message.chat.id, 'Академический бакалавриат')
+        bot.send_message(message.chat.id, '<b>Академический бакалавриат</b>\n'
+                                          'Срок обучения - 4 года\n'
+                                          '<b>Направления подготовки:</b>\n', parse_mode='HTML')
+        bot.send_message(message.chat.id, '02.03.03 - Математическое обеспечение и администрирование информационных систем\n'
+                                          '<b>Профиль:</b>\n'
+                                          '<a href="http://abitur.psuti.ru/napravleniya-podgotovki/profili/'
+                                          'tekhnologiya-programmirovaniya/">Технология программирования</a>\n'
+                                          '<b>Вступительные испытания:</b> Русский язык, Математика, Физика\n'
+                                          '<b>Число бюджетных мест:</b> 0\n'
+                                          '<b>Коммерческкое обучение:</b> \n'
+                                          '<b>Число конкратных мест:</b> 25\n'
+                                          '<b>Стоимость обучений(за один семестр):</b> 34000 р', parse_mode='HTML')
     elif message.text == 'Прикладной бакалавриат':
         bot.send_message(message.chat.id, 'Прикладной бакалавриат')
     elif message.text == 'Специалитет':
@@ -206,8 +207,6 @@ def org_info(message):
         bot.register_next_step_handler(msg_understand, course_info)
 
 
-
-
 '''    
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*[types.InlineKeyboardButton(text=orgname, callback_data=orgname)
@@ -250,6 +249,7 @@ def inline(c):
         bot.send_photo(c.message.chat.id, photo="http://sport.psuti.ru/doc/Ovg56tNXoFE.jpg")
 '''
 
+
 @bot.message_handler(commands=['about'])
 def about_dev(message):
     bot.send_message(message.chat.id, text='Чат-бот разработан студентами <b>ИТ-клуба ПГУТИ</b> для будующих студентов.\n'
@@ -265,7 +265,9 @@ def excursion(message):
     keyboard = types.InlineKeyboardMarkup()
     url_button = types.InlineKeyboardButton(text="ЭКСКУРСИЯ!", url="https://abitur.psuti.ru/priemnaya-kampaniya/interaktivnaya-ekskursiya-po-psuti/psuti_webgl.html")
     keyboard.add(url_button)
-    bot.send_message(message.chat.id, "Перейдите по ссылке чтобы поетить наш университет онлайн!", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Перейдите по ссылке чтобы поетить наш университет онлайн!\n'
+                                      'Рекомендуется открывать через браузер компьютера.')
+    bot.send_photo(message.from_user.id, photo="https://pp.vk.me/c629125/v629125487/21029/Qd9czt4U02E.jpg", reply_markup=keyboard)
 
 
 if __name__ == '__main__':
