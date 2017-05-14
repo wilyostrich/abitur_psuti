@@ -1,10 +1,18 @@
 import telebot
 from telebot import types
 import configparser
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from models import Specialty
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding = 'UTF-8')
 
+engine = create_engine("postgresql://postgres:1234@localhost/abitur")
+Session = sessionmaker(bind=engine)
+session = Session()
+fields = session.query(Specialty)
+numb_fields = fields.count()
 
 bot = telebot.TeleBot(config["DEFAULT"]["Token"])
 
@@ -35,7 +43,9 @@ def help_message(message):
 
 @bot.message_handler(commands=['openday'])
 def openday(message):
-    bot.send_message(message.chat.id, 'Приглашаем всех желающих (абитуриентов, школьников и их родителей) на День '
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.row('Меню')
+    open_d = bot.send_message(message.chat.id, 'Приглашаем всех желающих (абитуриентов, школьников и их родителей) на День '
                                       'открытых дверей в ПГУТИ. Экскурсии по вузу, презентации направлений подготовки, '
                                       'ответы на всевозможные вопросы по процессу обучения в университете - всё это и '
                                       'многое другое ждёт вас на днях открытых дверей в Самаре\n\n'
@@ -44,7 +54,16 @@ def openday(message):
                                       'Начало в 10:00 по самарскому времени.\n'
                                       'Актуальную и подробную информацию Вы можете узнать на сайте '
                                       'https://abitur.psuti.ru/ и в группе ВК https://vk.com/abiturpsuti'
-                     .format(config["OPENDAY"]["data"]), disable_web_page_preview=True)
+                     .format(config["OPENDAY"]["data"]), disable_web_page_preview=True, reply_markup=keyboard)
+    bot.register_next_step_handler(open_d, open_menu)
+
+def open_menu(message):
+    if message.text == 'Меню':
+        help_message(message)
+    else:
+        msg_understand = bot.send_message(message.chat.id, 'Я Вас не понял, повторите попытку '
+                                          'или используйте кнопку Меню для выхода в меню')
+        bot.register_next_step_handler(msg_understand, open_menu)
 
 
 @bot.message_handler(commands=['course'])
@@ -61,25 +80,32 @@ def course_info(message):
     if message.text == 'Подготовка к ЕГЭ и внутренним экзаменам':
         bot.send_message(message.chat.id, text=config["COURSE"]["ege"], parse_mode='HTML')
         msg_exam = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться на курсы,'
-                                          ' можно перейдя по ссылке: http://abitur.psuti.ru/center/podgotovitelnye-kursy-k-ege-i-vnutrennim-ekzamenam/', disable_web_page_preview=True)
+                                                     ' можно перейдя по ссылке: http://abitur.psuti.ru/'
+                                                     'center/podgotovitelnye-kursy-k-ege-i-vnutrennim-ekzamenam/',
+                                    disable_web_page_preview=True)
         bot.register_next_step_handler(msg_exam, course_info)
     elif message.text == 'Школа программистов':
         bot.send_message(message.chat.id, '<b>Школа программистов</b>\n'
-                                          'Обучение платное для учащихся 8-х, 9-х, 10-х и 11-х классов, проводится в 3 этапа:\n'
+                                          'Обучение платное для учащихся 8-х, 9-х, 10-х и 11-х классов, проводится '
+                                          'в 3 этапа:\n'
                                           '1. Информатика;\n'
                                           '2. Программирование;\n'
                                           '3. Информационные системы и технологии.\n'
                                           'Срок обучения в школе – 5 месяцев.\n'
-                                          'Окончившим Школу программистов выдается «Свидетельство об окончании», которое дает право преимущественного зачисления в ПГУТИ.\n'
+                                          'Окончившим Школу программистов выдается «Свидетельство об окончании», '
+                                          'которое дает право преимущественного зачисления в ПГУТИ.\n'
                                           'Справки по телефону: (846) 228-00-51,  (846) 228-00-58.', parse_mode='HTML')
-        msg_school = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться в школу программистов,'
-                                          ' можно перейдя по ссылке: http://abitur.psuti.ru/center/shkola-programmistov/', disable_web_page_preview=True, parse_mode='HTML')
+        msg_school = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться в школу '
+                                                       'программистов, можно перейдя по ссылке: '
+                                                       'http://abitur.psuti.ru/center/shkola-programmistov/',
+                                      disable_web_page_preview=True, parse_mode='HTML')
         bot.register_next_step_handler(msg_school, course_info)
     elif message.text == 'Инженерный лицей':
         bot.send_message(message.chat.id, text=config["COURSE"]["engineer"], parse_mode='HTML')
-        msg_engineer = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться на занятия,'
-                                          ' можно перейдя по ссылке: http://abitur.psuti.ru/center/inzhenernyy-litsey/',
-                         disable_web_page_preview=True, parse_mode='HTML')
+        msg_engineer = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также '
+                                                         'записаться на занятия, можно перейдя по ссылке: '
+                                                         'http://abitur.psuti.ru/center/inzhenernyy-litsey/',
+                                        disable_web_page_preview=True, parse_mode='HTML')
         bot.register_next_step_handler(msg_engineer, course_info)
     elif message.text == 'Меню':
         help_message(message)
@@ -87,6 +113,57 @@ def course_info(message):
         msg_understand = bot.send_message(message.chat.id, 'Я Вас не понял, выберите раздел из меню '
                                           'или используйте кнопку Меню для выхода в меню')
         bot.register_next_step_handler(msg_understand, course_info)
+
+
+
+def first_msg(message):
+    """Отвечаем на команду /start
+    """
+    spec = session.query(Specialty).filter_by(id_spec=1).first()
+    bot.send_message(message.chat.id, 'Название: {}\nЭкзамены: {}\nСсылка на профиль: {}?'
+                                '\nБюджетные места: {}\nКонтрактные места: {}'
+                                '\nЦена контракт: {}'.format(spec.name, spec.examinations,
+                                                             spec.prof_link, spec.budgetary_place,
+                                                             spec.contract_places, spec.cost),
+                     parse_mode='Markdown', disable_web_page_preview=True, reply_markup=pages_keyboard(1))
+
+
+def pages_keyboard(numb):
+    """Формируем Inline-кнопки для перехода по страницам.
+    """
+    keyboard = types.InlineKeyboardMarkup()
+    btns = []
+    btns.append(types.InlineKeyboardButton(text='Меню',callback_data='help'))
+    if numb > 1: btns.append(types.InlineKeyboardButton(
+        text='<', callback_data='to_{}'.format(numb - 1)))
+    if numb < numb_fields: btns.append(types.InlineKeyboardButton(
+        text='>', callback_data='to_{}'.format(numb + 1)))
+    keyboard.add(*btns)
+    return keyboard  # возвращаем объект клавиатуры
+
+
+@bot.callback_query_handler(func=lambda c: c.data)
+def pages(c):
+    """Редактируем сообщение каждый раз, когда пользователь переходит по
+    страницам.
+    """
+    print(c.data)
+    print(numb_fields)
+    if c.data=='help':
+        help_message(c.message)
+    elif int(c.data[3:]) <= numb_fields:
+        spec = session.query(Specialty).filter_by(id_spec=c.data[3:]).first()
+        bot.edit_message_text(
+            chat_id=c.message.chat.id,
+            message_id=c.message.message_id,
+            disable_web_page_preview=True,
+            text='Название: {}\nЭкзамены: {}\nСсылка на профиль: {}\nБюджетные места: {}\nКонтрактные места: {}'
+                 '\nЦена контракт: {}'.format(spec.name, spec.examinations, spec.prof_link,
+                                              spec.budgetary_place, spec.contract_places, spec.cost),
+            parse_mode='Markdown',
+            reply_markup=pages_keyboard(int(c.data[3:])))
+    elif int(c.data[3:]) > numb_fields:
+        first_msg()
 
 
 @bot.message_handler(commands=['specialties'])
@@ -101,28 +178,25 @@ def specialties(message):
 
 def specialties_info(message):
     if message.text == 'Академический бакалавриат':
-        bot.send_message(message.chat.id, '<b>Академический бакалавриат</b>\n'
-                                          'Срок обучения - 4 года\n'
-                                          '<b>Направления подготовки:</b>\n', parse_mode='HTML')
-        bot.send_message(message.chat.id, '02.03.03 - Математическое обеспечение и администрирование информационных систем\n'
-                                          '<b>Профиль:</b>\n'
-                                          '<a href="http://abitur.psuti.ru/napravleniya-podgotovki/profili/'
-                                          'tekhnologiya-programmirovaniya/">Технология программирования</a>\n'
-                                          '<b>Вступительные испытания:</b> Русский язык, Математика, Физика\n'
-                                          '<b>Число бюджетных мест:</b> 0\n'
-                                          '<b>Коммерческкое обучение:</b> \n'
-                                          '<b>Число конкратных мест:</b> 25\n'
-                                          '<b>Стоимость обучений(за один семестр):</b> 34000 р', parse_mode='HTML')
+        first_msg(message)
+
+
+#--------------------------------------------------------------------------------------------
     elif message.text == 'Прикладной бакалавриат':
-        bot.send_message(message.chat.id, 'Прикладной бакалавриат')
+        spec = session.query(Specialty).filter_by(id_spec=1).first()
+        bot.send_message(message.chat.id, 'Прикладной бакалавриат {}'.format(spec.name))
+
+
     elif message.text == 'Специалитет':
         bot.send_message(message.chat.id, 'Специалитет')
 
 
 @bot.message_handler(commands=['guide'])
 def guide(message):
-    bot.send_message(message.chat.id, "Тест!")
-
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.row('Меню')
+    guide_msg = bot.send_message(message.chat.id, 'Не реализовано!', reply_markup=keyboard)
+    bot.register_next_step_handler(guide_msg, open_menu)
 
 @bot.message_handler(commands=['rating'])
 def rating(message):
@@ -131,6 +205,8 @@ def rating(message):
 
 @bot.message_handler(commands=['contacts'])
 def contacts(message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.row('Меню')
     bot.send_message(message.chat.id, text='<b>Контактная информация</b>\n\n'
                                            '<b>Телефоны:</b> '
                                            '(846)228-00-51, '
@@ -142,8 +218,8 @@ def contacts(message):
                                            '• автобусами (1, 23, 30, 37, 47, 56),\n'
                                            '• троллейбусами (2, 4, 12, 17, 19),\n'
                                            '• маршрутными такси (1, 1к, 4 (216), 21м, 23, 37, 47, 67, 91, 110, 257д, 259, 269, 373, 392, 392а, 410а, 492).', parse_mode='HTML')
-    bot.send_venue(message.chat.id, 53.2256561, 50.1949533, 'Физический адрес:', '443090, г. Самара, ул.Московское шоссе, 77, комн.201')
-
+    contact_msg = bot.send_venue(message.chat.id, 53.2256561, 50.1949533, 'Физический адрес:', '443090, г. Самара, ул.Московское шоссе, 77, комн.201')
+    bot.register_next_step_handler(contact_msg, open_menu)
 
 @bot.message_handler(commands=['calculator'])
 def calculator(message):
@@ -167,37 +243,41 @@ def org_info(message):
         vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/itclub_psuti")
         inst_button = types.InlineKeyboardButton(text="Instagram", url="https://www.instagram.com/itclub_psuti/")
         keyboard.add(vk_button, inst_button)
-        bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["itclub"], parse_mode='HTML',
+        msg_itclub = bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["itclub"], disable_web_page_preview=False, parse_mode='HTML',
                          reply_markup=keyboard)
-        msg_itclub = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c623223/v623223296/234e/vqj_1H5X-Bs.jpg")
+        #msg_itclub = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c623223/v623223296/234e/vqj_1H5X-Bs.jpg")
         bot.register_next_step_handler(msg_itclub, org_info)
     elif message.text == 'Профком':
         keyboard = types.InlineKeyboardMarkup()
         vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/profkom_psuti")
         inst_button = types.InlineKeyboardButton(text="Instagram", url="https://www.instagram.com/profkompguti/")
         keyboard.add(vk_button, inst_button)
-        bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["profkom"], parse_mode='HTML',
+        msg_profkom = bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["profkom"], disable_web_page_preview=False, parse_mode='HTML',
                          reply_markup=keyboard)
-        msg_profkom = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c11086/v11086252/59/ALr9Fe6aJX4.jpg")
+        #msg_profkom = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c11086/v11086252/59/ALr9Fe6aJX4.jpg")
         bot.register_next_step_handler(msg_profkom, org_info)
     elif message.text == 'СМЦ':
         keyboard = types.InlineKeyboardMarkup()
         vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/smcpsuti")
         keyboard.add(vk_button)
-        bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["smc"], parse_mode='HTML',
+        msg_smc = bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["smc"], disable_web_page_preview=False, parse_mode='HTML',
                          reply_markup=keyboard)
-        msg_smc = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c624423/v624423730/46ffb/o64s1rt7Sds.jpg")
+        #msg_smc = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c624423/v624423730/46ffb/o64s1rt7Sds.jpg")
         bot.register_next_step_handler(msg_smc, org_info)
     elif message.text == 'РСО':
-        msg_rso = bot.send_message(message.chat.id, 'Разнорабочие')
+        keyboard = types.InlineKeyboardMarkup()
+        vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/smcpsuti")
+        keyboard.add(vk_button)
+        msg_rso = bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["rso"], disable_web_page_preview=False, parse_mode='HTML',
+                         reply_markup=keyboard)
         bot.register_next_step_handler(msg_rso, org_info)
     elif message.text == 'Спортивные секции':
         keyboard = types.InlineKeyboardMarkup()
         site_btn = types.InlineKeyboardButton(text="Перейти на сайт", url="http://sport.psuti.ru/")
         keyboard.add(site_btn)
-        bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["sport"], parse_mode='HTML',
+        msg_sport = bot.send_message(message.chat.id, text=config["ORG_INFORMATION"]["sport"], disable_web_page_preview=False, parse_mode='HTML',
                          reply_markup=keyboard)
-        msg_sport = bot.send_photo(message.chat.id, photo="http://sport.psuti.ru/doc/Ovg56tNXoFE.jpg")
+        #msg_sport = bot.send_photo(message.chat.id, photo="http://sport.psuti.ru/doc/Ovg56tNXoFE.jpg")
         bot.register_next_step_handler(msg_sport, org_info)
     elif message.text == 'Меню':
         help_message(message)
@@ -207,58 +287,22 @@ def org_info(message):
         bot.register_next_step_handler(msg_understand, course_info)
 
 
-'''    
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(*[types.InlineKeyboardButton(text=orgname, callback_data=orgname)
-                   for orgname in ['РСО', 'Профком', 'СМЦ',
-                                   'IT-клуб ПГУТИ', 'Спортивные секции']])
-    bot.send_message(message.chat.id, 'Про каждую организация можно узнав перейдя в '
-                                      'интересующий раздел.', reply_markup=keyboard)
-
-
-@bot.callback_query_handler(func=lambda c: True)
-def inline(c):
-    if c.data == 'IT-клуб ПГУТИ':
-        keyboard = types.InlineKeyboardMarkup()
-        vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/itclub_psuti")
-        inst_button = types.InlineKeyboardButton(text="Instagram", url="https://www.instagram.com/itclub_psuti/")
-        keyboard.add(vk_button, inst_button)
-        bot.send_message(c.message.chat.id, text=config["ORG_INFORMATION"]["itclub"], parse_mode='HTML',reply_markup=keyboard)
-        bot.send_photo(c.message.chat.id, photo="https://pp.userapi.com/c623223/v623223296/234e/vqj_1H5X-Bs.jpg")
-    elif c.data == 'Профком':
-        keyboard = types.InlineKeyboardMarkup()
-        vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/profkom_psuti")
-        inst_button = types.InlineKeyboardButton(text="Instagram", url="https://www.instagram.com/profkompguti/")
-        keyboard.add(vk_button, inst_button)
-        bot.send_message(c.message.chat.id, text=config["ORG_INFORMATION"]["profkom"], parse_mode='HTML',reply_markup=keyboard)
-        bot.send_photo(c.message.chat.id, photo="https://pp.userapi.com/c11086/v11086252/59/ALr9Fe6aJX4.jpg")
-    elif c.data == 'СМЦ':
-        keyboard = types.InlineKeyboardMarkup()
-        vk_button = types.InlineKeyboardButton(text="Вконтакте", url="https://vk.com/smcpsuti")
-        keyboard.add(vk_button)
-        bot.send_message(c.message.chat.id, text=config["ORG_INFORMATION"]["smc"], parse_mode='HTML',
-                         reply_markup=keyboard)
-        bot.send_photo(c.message.chat.id, photo="https://pp.userapi.com/c624423/v624423730/46ffb/o64s1rt7Sds.jpg")
-    elif c.data == 'РСО':
-        bot.send_message(c.message.chat.id, 'Разнорабочие')
-    elif c.data == 'Спортивные секции':
-        keyboard = types.InlineKeyboardMarkup()
-        site_btn = types.InlineKeyboardButton(text="Перейти на сайт", url="http://sport.psuti.ru/")
-        keyboard.add(site_btn)
-        bot.send_message(c.message.chat.id, text=config["ORG_INFORMATION"]["sport"], parse_mode='HTML', reply_markup=keyboard)
-        bot.send_photo(c.message.chat.id, photo="http://sport.psuti.ru/doc/Ovg56tNXoFE.jpg")
-'''
-
-
 @bot.message_handler(commands=['about'])
 def about_dev(message):
-    bot.send_message(message.chat.id, text='Чат-бот разработан студентами <b>ИТ-клуба ПГУТИ</b> для будующих студентов.\n'
-                                      'Будем рады увидеть Вас в наших рядах!', parse_mode='HTML')
-    keyboard = types.InlineKeyboardMarkup()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.row('Меню')
+    inline_key = types.InlineKeyboardMarkup()
     url_button = types.InlineKeyboardButton(text="ПРИСОЕДИНЯЙСЯ!", url="https://vk.com/itclub_psuti")
-    keyboard.add(url_button)
-    bot.send_photo(message.from_user.id, photo="https://pp.vk.me/c629125/v629125487/21029/Qd9czt4U02E.jpg", reply_markup=keyboard)
-
+    inline_key.add(url_button)
+    about_msg = bot.send_message(message.chat.id, text='Чат-бот разработан студентами <b>ИТ-клуба ПГУТИ</b> для будующих студентов.'
+                                      '\nБудем рады увидеть Вас в наших рядах! '
+                                      '\nhttps://pp.vk.me/c629125/v629125487/21029/Qd9czt4U02E.jpg',
+                     parse_mode='HTML',reply_markup=inline_key)
+    #keyboard = types.InlineKeyboardMarkup()
+    #url_button = types.InlineKeyboardButton(text="ПРИСОЕДИНЯЙСЯ!", url="https://vk.com/itclub_psuti")
+    #keyboard.add(url_button)
+    #bot.send_photo(message.from_user.id, photo="https://pp.vk.me/c629125/v629125487/21029/Qd9czt4U02E.jpg", )
+    bot.register_next_step_handler(about_msg, open_menu)
 
 @bot.message_handler(commands=['excursion'])
 def excursion(message):
