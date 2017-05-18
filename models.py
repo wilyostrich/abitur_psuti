@@ -19,3 +19,4 @@ class Specialty(Base):
     def __repr__(self):
         return '<Specialty: {}, {}>'.format(self.name, self.examinations)
 
+

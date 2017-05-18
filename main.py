@@ -4,6 +4,7 @@ import configparser
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from models import Specialty
+import start
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding = 'UTF-8')
@@ -17,11 +18,13 @@ numb_fields = fields.count()
 bot = telebot.TeleBot(config["DEFAULT"]["Token"])
 
 @bot.message_handler(commands=['start'])
-def start_message(message):
-    markup = types.ReplyKeyboardRemove(selective=False)
-    bot.send_message(message.chat.id, 'Привет! Здесь собрана достоверная информация о Поволжском государственном '
-                                      'университете телекоммуникаций и информатики', reply_markup=markup)
-    help_message(message)
+def start_msg(message):
+   start.start_message(message)
+#def start_message(message):
+  #  markup = types.ReplyKeyboardRemove(selective=False)
+ #   bot.send_message(message.chat.id, 'Привет! Здесь собрана достоверная информация о Поволжском государственном '
+ #                                     'университете телекоммуникаций и информатики', reply_markup=markup)
+ #   help_message(message)
 
 
 @bot.message_handler(commands=['help'])
