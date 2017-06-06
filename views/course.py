@@ -1,8 +1,9 @@
 from telebot import types
 from views import general
-from config import bot
-from config import config
-def course(message, bot):
+from di_configuration import DIConfige, DIBot
+
+def course(message):
+    bot = DIBot.di_bot()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     keyboard.row('Инженерный лицей', 'Школа программистов')
     keyboard.row('Подготовка к ЕГЭ и внутренним экзаменам')
@@ -12,6 +13,8 @@ def course(message, bot):
 
 
 def course_info(message):
+    config = DIConfige.config_ini()
+    bot = DIBot.di_bot()
     if message.text == 'Подготовка к ЕГЭ и внутренним экзаменам':
         bot.send_message(message.chat.id, text=config["COURSE"]["ege"], parse_mode='HTML')
         msg_exam = bot.send_message(message.chat.id, 'Получить более подробную информаци, а также записаться на курсы,'
@@ -43,10 +46,10 @@ def course_info(message):
                                         disable_web_page_preview=True, parse_mode='HTML')
         bot.register_next_step_handler(msg_engineer, course_info)
     elif message.text == 'Меню':
-        general.help_message(message, bot)
+        general.help_message(message)
     else:
         msg_understand = bot.send_message(message.chat.id, 'Я Вас не понял, выберите раздел из меню '
                                           'или используйте кнопку Меню для выхода в меню')
         bot.register_next_step_handler(msg_understand, course_info)
 
-handlers = {'course': course,}
+handlers = {'course': course}

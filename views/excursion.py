@@ -1,7 +1,9 @@
 from telebot import types
+from di_configuration import DIBot
 
-def excursion(message, bot):
+def excursion(message):
     print('excursion')
+    bot = DIBot.di_bot()
     keyboard = types.InlineKeyboardMarkup()
     url_button = types.InlineKeyboardButton(
         text='ЭКСКУРСИЯ!',

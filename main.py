@@ -5,25 +5,32 @@ import dependency_injector as di
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from di_configuration import DIConfige, DIBot
+
 from views import handlers, specialty
 from config import DATABASE_URI
-
-from config import bot
-# config = configparser.ConfigParser()
-# config.read('config.ini', encoding='UTF-8')
+config = configparser.ConfigParser()
+config.read('text_config.ini', encoding='UTF-8')
 
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
-#bot = telebot.TeleBot(config["DEFAULT"]["Token"])
+
+bot = telebot.TeleBot(config["DEFAULT"]["Token"])
 
 db_session_prv = di.Object(session)
 specialty.DIService.db_session.override(db_session_prv)
 
+config_prv = di.Object(config)
+DIConfige.config_ini.override(config_prv)
+
+bot_prv = di.Object(bot)
+DIBot.di_bot.override(bot_prv)
+
 # Добавляем обработчики
 for name, func in handlers.items():
     bot.message_handler(commands=[name])(
-        lambda massage, func=func: func(massage, bot=bot)
+        lambda massage, func=func: func(massage)
     )
 
 #

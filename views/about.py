@@ -1,8 +1,10 @@
 from telebot import types
-from views import open_menu as menu #возможный костыль
+from di_configuration import DIBot
+from .open_menu import open_menu as menu
 
-#@bot.message_handler(commands=['about'])
-def about_dev(message, bot):
+
+def about_dev(message):
+    bot = DIBot.di_bot()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     keyboard.row('Меню')
     inline_key = types.InlineKeyboardMarkup()
@@ -16,7 +18,10 @@ def about_dev(message, bot):
     #url_button = types.InlineKeyboardButton(text="ПРИСОЕДИНЯЙСЯ!", url="https://vk.com/itclub_psuti")
     #keyboard.add(url_button)
     #bot.send_photo(message.from_user.id, photo="https://pp.vk.me/c629125/v629125487/21029/Qd9czt4U02E.jpg", )
-    bot.register_next_step_handler(about_msg, menu.open_menu)
+    bot.register_next_step_handler(about_msg, open_menu)
 
+
+def open_menu(message):
+    menu(message)
 
 handlers = {'about': about_dev}

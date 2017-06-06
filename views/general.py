@@ -1,7 +1,8 @@
 from telebot import types
+from di_configuration import DIBot
 
-
-def start_message(message, bot):
+def start_message(message):
+    bot = DIBot.di_bot()
     print('start')
     markup = types.ReplyKeyboardRemove(selective=False)
     bot.send_message(
@@ -10,10 +11,11 @@ def start_message(message, bot):
         'государственном университете телекоммуникаций и информатики',
         reply_markup=markup
     )
-    help_message(message, bot)
+    help_message(message)
 
 
-def help_message(message, bot):
+def help_message(message):
+    bot = DIBot.di_bot()
     print('help')
     markup = types.ReplyKeyboardRemove(selective=False)
     bot.send_message(
@@ -24,7 +26,6 @@ def help_message(message, bot):
         '/course - Курсы для абитуриентов\n'
         '/specialties - Направления подготовки\n'
         '/guide - Руководство по поступлению\n'
-        '/rating - Узнай свой рейтинг\n'
         '/contacts - Контактая информация\n'
         '/calculator - Подсчитай свои баллы и узнай на какую спецальность ты проходишь\n'
         '/studorganizations - внеучебная деятельность\n'

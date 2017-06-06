@@ -1,10 +1,11 @@
 from telebot import types
-from views import open_menu as menu #возможный костыль
+from di_configuration import DIBot
+from .open_menu import open_menu as menu
 
-#@bot.message_handler(commands=['contacts'])
-def contacts(message, bot):
+def contacts(message):
+    bot = DIBot.di_bot()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    keyboard.row('/help')
+    keyboard.row('Меню')
     bot.send_message(
         message.chat.id,
         text='<b>Контактная информация</b>\n\n'
@@ -22,6 +23,9 @@ def contacts(message, bot):
         'Физический адрес:',
         '443090, г. Самара, ул.Московское шоссе, 77, комн.201',
         reply_markup=keyboard)
-    bot.register_next_step_handler(contact_msg, menu.open_menu)
+    bot.register_next_step_handler(contact_msg, open_menu)
+
+def open_menu(message):
+    menu(message)
 
 handlers = {'contacts': contacts}

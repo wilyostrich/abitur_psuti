@@ -1,15 +1,16 @@
 from telebot import types
 from models import Academic
 import dependency_injector as di
+from di_configuration import DIBot
+from .general import help_message
 
 
 class DIService(di.AbstractCatalog):
     db_session = di.Provider()
 
 
-def first_msg(message, bot):
-    """Отвечаем на команду /start
-    """
+def first_msg(message):
+    bot = DIBot.di_bot()
     session = DIService.db_session()
     spec = session.query(Academic).filter_by(id_spec=1).first()
     bot.send_message(message.chat.id,
@@ -39,12 +40,13 @@ def pages_keyboard(numb):
     return keyboard  # возвращаем объект клавиатуры
 
 
-
 # @bot.callback_query_handler(func=lambda c: c.data)
 # def pages(c):
 #     """Редактируем сообщение каждый раз, когда пользователь переходит по
 #     страницам.
 #     """
+#     session = DIService.db_session()
+#     numb_fields = session.query(Academic).count()
 #     print(c.data)
 #     print(numb_fields)
 #     if c.data=='help':
@@ -64,24 +66,27 @@ def pages_keyboard(numb):
 #         first_msg()
 
 
-def specialties(message, bot):
+def specialties(message):
+    bot = DIBot.di_bot()
     print('specialties')
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=True)
     keyboard.add('Академический бакалавриат')
     keyboard.add('Прикладной бакалавриат')
     keyboard.add('Специалитет')
+    keyboard.add('Меню')
     msg = bot.send_message(
         message.chat.id, 'Выберите необходимую степень!', reply_markup=keyboard
     )
     bot.register_next_step_handler(
-        msg, lambda massage: specialties_info(massage, bot)
+        msg, lambda massage: specialties_info(massage)
     )
 
 
-def specialties_info(message, bot):
+def specialties_info(message):
+    bot = DIBot.di_bot()
     if message.text == 'Академический бакалавриат':
-        first_msg(message, bot)
+        first_msg(message)
     elif message.text == 'Прикладной бакалавриат':
         session = DIService.db_session()
         spec = session.query(Academic).filter_by(id_spec=1).first()
@@ -90,6 +95,9 @@ def specialties_info(message, bot):
         )
     elif message.text == 'Специалитет':
         bot.send_message(message.chat.id, 'Специалитет')
+    elif message.text == 'Меню':
+        help_message(message)
+
 
 
 handlers = {'specialties': specialties}
