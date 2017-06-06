@@ -12,10 +12,11 @@ subject = {1: 'Физика',
            2: 'Русский'}
 
 count_iteration = 1
-count_points = 0
+count_points = 1
 
 
 def points(message):
+    count_points = 1
     try:
         bot = DIBot.di_bot()
         global count_iteration, count_points
@@ -104,6 +105,13 @@ def spec_msg(message, points):
                 specialty[items].format(items),
                 parse_mode='HTML',
                 disable_web_page_preview=True)
+    elif int(points) < 150:
+        bot.send_message(
+            message.chat.id,
+            'К сожалению, твоих баллов не хватает для поступления на бюджет!!! '
+            'Но ты можешь поступить на комерческое обучение. Для ознакомления с специальностями '
+            'перейди в раздел с специальностями /specialties')
+        clear_point()
     elif int(points) < 160:
         # bot.send_message(
         #     message.chat.id,
@@ -116,6 +124,7 @@ def spec_msg(message, points):
                     specialty[items].format(items),
                     parse_mode='HTML',
                     disable_web_page_preview=True)
+        clear_point()
     elif int(points) < 170:
         # bot.send_message(
         #     message.chat.id,
@@ -128,12 +137,12 @@ def spec_msg(message, points):
                     specialty[items].format(items),
                     parse_mode='HTML',
                     disable_web_page_preview=True)
-    elif int(points) < 150:
-        bot.send_message(
-            message.chat.id,
-            'К сожалению, твоих баллов не хватает для поступления на бюджет!!! '
-            'Но ты можешь поступить на комерческое обучение Для ознакомления с специальностями '
-            'перейди в раздел с специальностями /specialties')
+        clear_point()
+
+
+def clear_point():
+    global count_points
+    count_points = 1
 
 
 handlers = {'calculator': calculator}
