@@ -1,29 +1,33 @@
 from di_configuration import DIBot
 
+subject = {1: 'Физика',
+           2: 'Русский'}
+
+count_iteration = 1
+count_points = 0
+
 
 def calculator(message):
+    global count_points
+    count_points = 0
     bot = DIBot.di_bot()
     calc_msg = bot.send_message(
         message.chat.id,
         'Введите количество баллов по Математике, т.к она является самым важным предметом')
     bot.register_next_step_handler(calc_msg, points)
 
-subject = {1: 'Физика',
-           2: 'Русский'}
-
-count_iteration = 1
-count_points = 1
-
 
 def points(message):
-    count_points = 1
+    global count_iteration, count_points
+    print('до = {}'.format(count_points))
+    count_points += int(message.text)
+    print('после = {}'.format(count_points))
     try:
         bot = DIBot.di_bot()
-        global count_iteration, count_points
+        print(count_iteration)
         calc_msg = bot.send_message(
             message.chat.id,
             'Введите количество баллов по ' + subject[count_iteration])
-        count_points += int(message.text)
         count_iteration += 1
         bot.register_next_step_handler(calc_msg, points)
     except:
@@ -95,10 +99,6 @@ def spec_msg(message, points):
         'Ознакомьтесь с доступными направлениям. Для этого можете перейти по ссылке либо воспользоваться командой '
         '/specialties'.format(points), parse_mode = 'HTML')
     if int(points) >= 190:
-        # bot.send_message(
-        #     message.chat.id,
-        #     'Поздравляем у вас отличный балл!!! Ознакомьтесь с доступными направлениям. '
-        #     'Для этого можете перейти по ссылке либо воспользоватться командой /specialties')
         for items in specialty:
             bot.send_message(
                 message.chat.id,
@@ -111,12 +111,7 @@ def spec_msg(message, points):
             'К сожалению, твоих баллов не хватает для поступления на бюджет!!! '
             'Но ты можешь поступить на комерческое обучение. Для ознакомления с специальностями '
             'перейди в раздел с специальностями /specialties')
-        clear_point()
     elif int(points) < 160:
-        # bot.send_message(
-        #     message.chat.id,
-        #     'Поздравляем у вас хороший балл!!! Ознакомьтесь с доступными направлениям. Для этого можете перейти по '
-        #     'ссылке либо воспользоватться командой /specialties')
         for items in specialty:
             if items < 160:
                 bot.send_message(
@@ -124,12 +119,7 @@ def spec_msg(message, points):
                     specialty[items].format(items),
                     parse_mode='HTML',
                     disable_web_page_preview=True)
-        clear_point()
     elif int(points) < 170:
-        # bot.send_message(
-        #     message.chat.id,
-        #     'Поздравляем у вас хороший балл!!! Ознакомьтесь с доступными направлениям. Для этого можете перейти по '
-        #     'ссылке либо воспользоватться командой /specialties')
         for items in specialty:
             if items < 170:
                 bot.send_message(
@@ -137,7 +127,23 @@ def spec_msg(message, points):
                     specialty[items].format(items),
                     parse_mode='HTML',
                     disable_web_page_preview=True)
-        clear_point()
+    elif int(points) < 180:
+        for items in specialty:
+            if items < 180:
+                bot.send_message(
+                    message.chat.id,
+                    specialty[items].format(items),
+                    parse_mode='HTML',
+                    disable_web_page_preview=True)
+    elif int(points) < 190:
+        for items in specialty:
+            if items < 190:
+                bot.send_message(
+                    message.chat.id,
+                    specialty[items].format(items),
+                    parse_mode='HTML',
+                    disable_web_page_preview=True)
+    clear_point()
 
 
 def clear_point():

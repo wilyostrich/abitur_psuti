@@ -14,15 +14,16 @@ def first_msg(message):
     session = DIService.db_session()
     spec = session.query(Academic).filter_by(id_spec=1).first()
     bot.send_message(message.chat.id,
-                     'Название: {}\nЭкзамены: {}\nСсылка на профиль: {}?'
-                     '\nБюджетные места: {}\nКонтрактные места: {}'
-                     '\nЦена контракт: {}'.format(spec.name, spec.examinations,
-                                                  spec.prof_link,
-                                                  spec.budgetary_place,
-                                                  spec.contract_places,
-                                                  spec.cost),
-                     parse_mode='Markdown', disable_web_page_preview=True,
+                     '<b>{}</b>\n\n'
+                     '<b>Экзамены:</b> {}\n\n'
+                     '<b>Ссылка на профиль:</b> {}\n\n'
+                     '<b>Бюджетные места:</b> {}\n\n'
+                     '<b>Контрактные места:</b> {}\n\n'
+                     '<b>Цена контракт:</b> {} р.'.format(spec.name, spec.examinations, spec.prof_link,
+                                                          spec.budgetary_place, spec.contract_places, spec.cost),
+                     parse_mode='HTML', disable_web_page_preview=True,
                      reply_markup=pages_keyboard(1))
+
 
 def pages_keyboard(numb):
     """Формируем Inline-кнопки для перехода по страницам.
@@ -42,6 +43,7 @@ def pages_keyboard(numb):
 
 # @bot.callback_query_handler(func=lambda c: c.data)
 # def pages(c):
+#     bot = DIBot.di_bot()
 #     """Редактируем сообщение каждый раз, когда пользователь переходит по
 #     страницам.
 #     """
@@ -49,7 +51,7 @@ def pages_keyboard(numb):
 #     numb_fields = session.query(Academic).count()
 #     print(c.data)
 #     print(numb_fields)
-#     if c.data=='help':
+#     if c.data == 'help':
 #         help_message(c.message)
 #     elif int(c.data[3:]) <= numb_fields:
 #         spec = session.query(Academic).filter_by(id_spec=c.data[3:]).first()
@@ -57,9 +59,13 @@ def pages_keyboard(numb):
 #             chat_id=c.message.chat.id,
 #             message_id=c.message.message_id,
 #             disable_web_page_preview=True,
-#             text='Название: {}\nЭкзамены: {}\nСсылка на профиль: {}\nБюджетные места: {}\nКонтрактные места: {}'
-#                  '\nЦена контракт: {}'.format(spec.name, spec.examinations, spec.prof_link,
-#                                               spec.budgetary_place, spec.contract_places, spec.cost),
+#             text='<b>{}</b>\n\n'
+#                  '<b>Экзамены:</b> {}\n\n'
+#                  '<b>Ссылка на профиль:</b> {}\n\n'
+#                  '<b>Бюджетные места:</b> {}\n\n'
+#                  '<b>Контрактные места:</b> {}\n\n'
+#                  '<b>Цена контракт:</b> {} р.'.format(spec.name, spec.examinations, spec.prof_link,
+#                                                       spec.budgetary_place, spec.contract_places, spec.cost),
 #             parse_mode='Markdown',
 #             reply_markup=pages_keyboard(int(c.data[3:])))
 #     elif int(c.data[3:]) > numb_fields:
@@ -97,7 +103,6 @@ def specialties_info(message):
         bot.send_message(message.chat.id, 'Специалитет')
     elif message.text == 'Меню':
         help_message(message)
-
 
 
 handlers = {'specialties': specialties}
