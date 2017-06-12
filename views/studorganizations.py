@@ -3,7 +3,6 @@ from di_configuration import DIConfige, DIBot
 from views import general
 
 
-#@bot.message_handler(commands=['studorganizations'])
 def studorganizations(message):
     bot = DIBot.di_bot()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -16,6 +15,7 @@ def studorganizations(message):
         'Про каждую организация можно узнать, перейдя в интересующий раздел.',
         reply_markup=keyboard)
     bot.register_next_step_handler(msg_org, org_info)
+
 
 def org_info(message):
     bot = DIBot.di_bot()
@@ -31,7 +31,6 @@ def org_info(message):
             disable_web_page_preview=False,
             parse_mode='HTML',
             reply_markup=keyboard)
-        #msg_itclub = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c623223/v623223296/234e/vqj_1H5X-Bs.jpg")
         bot.register_next_step_handler(msg_itclub, org_info)
     elif message.text == 'Профком':
         keyboard = types.InlineKeyboardMarkup()
@@ -44,7 +43,6 @@ def org_info(message):
             disable_web_page_preview=False,
             parse_mode='HTML',
             reply_markup=keyboard)
-        #msg_profkom = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c11086/v11086252/59/ALr9Fe6aJX4.jpg")
         bot.register_next_step_handler(msg_profkom, org_info)
     elif message.text == 'СМЦ':
         keyboard = types.InlineKeyboardMarkup()
@@ -56,7 +54,6 @@ def org_info(message):
             disable_web_page_preview=False,
             parse_mode='HTML',
             reply_markup=keyboard)
-        #msg_smc = bot.send_photo(message.chat.id, photo="https://pp.userapi.com/c624423/v624423730/46ffb/o64s1rt7Sds.jpg")
         bot.register_next_step_handler(msg_smc, org_info)
     elif message.text == 'РСО':
         keyboard = types.InlineKeyboardMarkup()
@@ -79,7 +76,6 @@ def org_info(message):
             disable_web_page_preview=False,
             parse_mode='HTML',
             reply_markup=keyboard)
-        #msg_sport = bot.send_photo(message.chat.id, photo="http://sport.psuti.ru/doc/Ovg56tNXoFE.jpg")
         bot.register_next_step_handler(msg_sport, org_info)
     elif message.text == 'Меню':
         general.help_message(message)

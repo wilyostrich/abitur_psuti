@@ -53,8 +53,5 @@ def course_info(message):
                 general.help_message(message)
         except:
             print('ERROR')
-        # msg_understand = bot.send_message(message.chat.id, 'Я Вас не понял, выберите раздел из меню '
-        #                                 ..  'или используйте кнопку Меню для выхода в меню')
-        # bot.register_next_step_handler(msg_understand, course_info)
 
 handlers = {'course': course}

@@ -2,6 +2,7 @@ from telebot import types
 from di_configuration import DIConfige, DIBot
 from .open_menu import open_menu as menu
 
+
 def openday(message):
     config = DIConfige.config_ini()
     bot = DIBot.di_bot()
@@ -18,20 +19,10 @@ def openday(message):
         'https://abitur.psuti.ru/ и в группе ВК https://vk.com/abiturpsuti'.format(config["OPENDAY"]["data"]),
         disable_web_page_preview=True,
         reply_markup=keyboard)
-    bot.register_next_step_handler(open_d, open_menu)  #open_menu
+    bot.register_next_step_handler(open_d, open_menu)
 
 
 def open_menu(message):
     menu(message)
-    # bot = DIBot.di_bot()
-    # if message.text == 'Меню':
-    #     general.help_message(message)
-    # else:
-    #     test = message.text
-    #     print(test)
-    #     msg_understand = bot.send_message(
-    #         message.chat.id,
-    #         'Я Вас не понял, повторите попытку или используйте кнопку Меню для вызова справки')
-    #     bot.register_next_step_handler(msg_understand, open_menu)
 
 handlers = {'openday': openday}
